@@ -58,13 +58,19 @@ More information about how to create a spritesheet can be found here: *WIP*
 ```javascript
 spr(frame, x, y, [w], [h], [d])
 ```
-##### Parameters
-**frame**: the sprite number.
-**x**: the x coordinate that the top right corner of the sprite will be placed
-**y**: the y coordinate that the top right corner of the sprite will be placed
-**w**: how many sprites across from the spritesheet should be displayed (optional)
-**h**: how many sprites down from the spritesheet should be displayed (optional)
-**d**: weather or not the image is flipped (either true or false) (optional)
+### Parameters
+##### frame: 
+  the sprite number.
+##### x: 
+  the x coordinate that the top right corner of the sprite will be placed
+##### y: 
+  the y coordinate that the top right corner of the sprite will be placed
+##### w:
+  how many sprites across from the spritesheet should be displayed (optional)
+##### h:
+  how many sprites down from the spritesheet should be displayed (optional)
+##### d:
+  weather or not the image is flipped (either true or false) (optional)
 
 ## 2. put()
 
@@ -74,10 +80,13 @@ More information about how colours work can be found here: *WIP*
 put(string, x, y, clr)
 ```
 ##### Parameters
-string: what to print on the screen
-**x**: x coordinate
-y: y coordinate
-clr: the NES colour that it will print in (#'s from 0-63 or their hex code eg. 64='3f')
+  string: what to print on the screen
+##### x:
+  x coordinate
+##### y:
+  y coordinate
+##### clr: 
+  the NES colour that it will print in (#'s from 0-63 or their hex code eg. 64='3f')
 (if no colour is provided than it will default to black, and if no coordinates are provided it will print at 0,0 or the end of the last call of put() with no coordinates.)
 
 ## 3. cls()
@@ -87,7 +96,8 @@ generally at the beginning of draw_()
 ```javascript
 cls(clr)
 ```
-**clr**: the NES colour that the background will clear in (#'s from 0-63 or their hex code eg. 64='3f')
+##### clr:
+  the NES colour that the background will clear in (#'s from 0-63 or their hex code eg. 64='3f')
 
 ## 4. btn()
 
