@@ -134,8 +134,4 @@ lset(n) // sets the current layer to n
 lget() // returns the current layer
 ```
 
-## Thats it for now...
-
-
-
-
+# To do: displaying and using maps
