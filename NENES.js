@@ -4,11 +4,15 @@
 //  dMP dMP dMP     dMP dMP dMP     dP .dMP
 // dMP dMP dMMMMMP dMP dMP dMMMMMP  VMMMP"
 
-// Not Exactly NES 0.1.2
+// Not Exactly NES
 // by sweatersjpg
 
+var canvasElement;
+var ctx;
 let WD;
 let D = { W: 400, H: 240, S: 0}
+const FRAMERATE = 30;
+let lastFramerRates = new Array(128);
 let PAL = [
   '#67676f','#0007aa','#1f00b6','#43008e','#7f0077','#a6003f','#960000','#6f2f00',
   '#433b00','#005f00','#00a62f','#005f4f','#003b7f','#000000','#000000','#000000',
@@ -22,44 +26,50 @@ let PAL = [
 const WHITE = '30';
 const BLACK = '3f';
 let BC;
+let PY = 0;
+let PX = 0;
 let AB = [
   '0','1','2','3','4','5','6','7','8','9','!','"','#','$','%','&',
   "'",'(',')','*','+',',','-','.','/',':',';','<','=','>','?','@',
   'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p',
   'q','r','s','t','u','v','w','x','y','z','[','~',']','^','_',"'"
 ]
-const FRAMERATE = 30;
 let controls = [87, 83, 65, 68, 32, 13];
 let ctr = new Array(255);
-let P;
 let menu;
 let Draw;
-let img;
-let sprtsht_;
 let font = new Array(64);
 let pb = { paused : true, pressed : false }
+let layer = new Array(2);
+let currentLayer = 0;
+let defaultPalette = ['20','10','00','3d','1d','0d'];
+let currentPalette;
+let sprImg = [];
 
 function setup() {
-
   updateSize();
+
+  // canvasElement = document.createElement('canvas');
   canvasElement = createCanvas(WD.W,WD.H).elt;
-  let context = canvasElement.getContext('2d');
-  context.mozImageSmoothingEnabled = false;
-  context.webkitImageSmoothingEnabled = false;
-  context.msImageSmoothingEnabled = false;
-  context.imageSmoothingEnabled = false;
+  ctx = canvasElement.getContext('2d');
+  ctx.mozImageSmoothingEnabled = false;
+  ctx.webkitImageSmoothingEnabled = false;
+  ctx.msImageSmoothingEnabled = false;
+  ctx.imageSmoothingEnabled = false;
 
   noCursor();
   frameRate(FRAMERATE);
-  resetPixels();
+  p5.disableFriendlyErrors = true;
+  // resetPixels();
 
   Draw = new drawing();
   mouse = new mouse();
   menu = new defaultMenu();
+  currentPalette = palset(defaultPalette);
   loadNESFont(FNT);
 
   if (typeof init_ !== 'undefined') init_();
-
+  initializeLayers();
 }
 
 function draw() {
@@ -70,14 +80,18 @@ function draw() {
     if (typeof draw_ !== 'undefined') draw_();
     mouse.display();
   }
-  img.updatePixels();
   DisplayPixels();
-  showFrames();
 }
 
 //-----------------------
 
+function add(array, index) {
+  array.push(index);
+}
 
+function del(array, index) {
+  array.splice( array.indexOf(index), 1);
+}
 
 function btn(i) {
   return keyIsDown(controls[i]);
@@ -87,8 +101,8 @@ function spr(frame, x, y, w, h, d) {
   let sy = floor(floor(frame)/16)*16;
   let sx = (floor(frame)%16)*16;
 
-  let dy = floor(y) * D.S;
-  let dx = floor(x) * D.S;
+  let dy = floor(y)*D.S;
+  let dx = floor(x)*D.S;
 
   let sw = 16;
   let sh = 16;
@@ -98,23 +112,60 @@ function spr(frame, x, y, w, h, d) {
   let dw = sw*D.S;
   let dh = sh*D.S;
 
-  push();
+  let id = generateID(currentPalette, floor(frame));
 
-  if(d == true) {
-    // translate(WD.W, 0);
-    scale(-1.0,1.0);
-    dx*=-1;
-    dx-= dw;
+  let index = -1;
+  for (var i = 0; i < sprImg.length; i++) {
+    if(sprImg[i].id == id) {
+      index = i;
+      break;
+    }
   }
 
-  image(sprtsht_, dx, dy, dw, dh, sx, sy, sw, sh);
+  if(index < 0) {
+    img = createImage(sw, sh);
+    img.loadPixels();
+    w = sqrt(spriteSheet.length)
+    for (var y = 0; y < sh; y++) {
+      for (var x = 0; x < sw; x++) {
+        let sp = spriteSheet[ (x+sx) + (y+sy) * w];
+        if(sp == 9) continue;
+        clr = color(PAL[currentPalette[sp]]);
+        setColorAtIndex(img, x, y, clr);
+      }
+    }
+    img.updatePixels();
+    temp = {}
+    temp.img = img;
+    temp.id = id;
+    add(sprImg, temp);
+    index = sprImg.length-1;
+  }
 
-  pop();
+  // push();
+  temp = {};
+  if(d == true) {
+    temp.scale = -1.0;
+    dx*=-1;
+    dx-= dw;
+  } else temp.scale = 1.0;
+  temp.img = sprImg[index].img
+  temp.x = dx
+  temp.y = dy;
+  temp.w = dw;
+  temp.h = dh;
+  add(layer[currentLayer], temp)
+  // image(sprImg[index].img, dx, dy, dw, dh);
+  // pop();
 }
 
 function put(s, x, y, c) {
-  if(typeof x == 'undefined') x = 0;
-  if(typeof y == 'undefined') y = 0;
+  let useGlobal=false;
+  if(typeof x == 'undefined' || typeof y == 'undefined') {
+    x = PX;
+    y = PY;
+    useGlobal = true;
+  }
   if(typeof c == 'undefined') c = 63;
   if(typeof c == 'string') c = parseInt(c, 16);
   if(typeof s == 'string') s = s.toLowerCase();
@@ -151,6 +202,10 @@ function put(s, x, y, c) {
     }
   }
 
+  if(useGlobal) {
+    PX = dx + x;
+    PY = dy + y;
+  }
 }
 
 function cls(c) {
@@ -158,56 +213,109 @@ function cls(c) {
   if(typeof c == 'string') c = parseInt(c, 16);
   background(PAL[c]);
   BC = c;
+  PX = 0;
+  PY = 0;
 }
 
 function pget(x, y) {
-  clr = getColorAtindex(img, x, y);
-  if(alpha(clr) == 0) return BC;
-  for (var i = 0; i < PAL.length; i++) {
-    if(String(color(PAL[i])) == String(clr)) return i;
-  }
+  // clr = getColorAtindex(layer[currentLayer], x, y);
+  return BC;
+  // for (var i = 0; i < PAL.length; i++) {
+  //   if(String(color(PAL[i])) == String(clr)) return i;
+  // }
 }
 
 function pset(x, y, c) {
   if(typeof c == 'string') c = parseInt(c, 16);
-  setColorAtIndex(img, x, y, PAL[c]);
+  if(x > 0 && x < D.W && y > 0 && y < D.H) {
+    push();
+    fill(PAL[c]);
+    noStroke();
+    rect(x*D.S, y*D.S, D.S, D.S);
+    pop();
+    // setColorAtIndex(layer[currentLayer], x, y, PAL[c]);
+  }
+}
+
+function palset(p) {
+  for (var i = 0; i < p.length; i++) {
+    if(typeof p[i] == 'string') p[i] = parseInt(p[i], 16);
+  }
+  currentPalette = p;
+}
+
+function palget() {
+  return currentPalette;
+}
+
+function lset(n) {
+  currentLayer = n;
+  // layer[currentLayer].loadPixels();
+}
+
+function lget() {
+  return currentLayer;
 }
 
 //-----------------------
 
-function DisplayPixels() {
-  image(img, 0, 0, WD.W, WD.H);
+function generateID(p, f) {
+  let id = 0;
+  for (var i = 0; i < p.length; i++) id += p[i]*i;
+  return id*(f+1);
 }
 
-function resetPixels() {
-  img = createImage(D.W, D.H);
+function setNumberOfLayers(n) {
+  layer = new Array(n);
+}
 
-  img.loadPixels();
-
-  background(0);
-
-  // for (var i = 0; i < PIXELS.length; i++) {
-  //   PIXELS[i] = 0;
+function initializeLayers() {
+  // for (var i = 0; i < layer.length; i++) {
+  //   layer[i] = createGraphics(WD.W, WD.H);
+  //   layer[i].pixelDensity(4);
+  //   layer[i].scale(1/4);
+  //   // layer[i].loadPixels();
   // }
 }
 
-function loadSpriteSheet(s) {
-  w = sqrt(s.length);
-  sprtsht_ = createImage(w, w);
-  sprtsht_.loadPixels();
-
-  for (var y = 0; y < w; y++) {
-    for (var x = 0; x < w; x++) {
-      let i = x + y * w;
-      if(s[i] != "##") {
-        let c = parseInt(s[i], 16);
-        sprtsht_.set(x, y, color(PAL[c]));
-      }
+function DisplayPixels() {
+  for (var i = 0; i < layer.length; i++) {
+    for (var j = 0; j < layer[i].length; j++) {
+      o = layer[i][j];
+      push();
+      scale(o.scale, 1.0);
+      image(o.img, o.x, o.y, o.w, o.h);
+      pop();
     }
   }
-
-  sprtsht_.updatePixels();
 }
+
+function resetPixels() {
+  for (var i = 0; i < layer.length; i++) {
+    // layer[i].background(0, 0);
+    layer[i] = [];
+  }
+
+  background(0);
+}
+
+// function loadSpriteSheet(s) {
+//   w = sqrt(s.length);
+//   sprtsht_ = createImage(w, w);
+//   sprtsht_.loadPixels();
+//
+//   for (var y = 0; y < w; y++) {
+//     for (var x = 0; x < w; x++) {
+//       let i = x + y * w;
+//       if(s[i] != "##") {
+//         let c = parseInt(s[i], 16);
+//         sprtsht_.set(x, y, color(PAL[c]));
+//       }
+//     }
+//   }
+//
+//   sprtsht_.updatePixels();
+// }
 
 function loadNESFont(s) {
   let w = 256;
@@ -251,7 +359,6 @@ function getColorAtindex(img, x, y) {
 
 function setColorAtIndex(img, x, y, clr) {
   let idx = imageIndex(img, x, y);
-
   let pix = img.pixels;
   pix[idx] = red(clr);
   pix[idx + 1] = green(clr);
@@ -285,11 +392,20 @@ function mouse() {
 }
 
 function showFrames() {
+  lastFramerRates[127]=frameRate();
+  let sum = 0;
+  for (var i = 0; i < 127; i++) {
+    sum += lastFramerRates[i];
+    lastFramerRates[i] = lastFramerRates[i+1];
+  }
+  let avg = sum/127;
+
   let x = D.W - 16;
   let y = D.H - 8;
   if(pget(x, y) != 63) clr = BLACK;
   else clr = WHITE;
-  put(round(frameRate()), x, y, clr);
+  // put(String(lastFramerRates));
+  put(round(avg), x, y, clr);
 }
 
 function pause() {
@@ -308,7 +424,7 @@ function windowResized() {
 }
 
 function updateSize() {
-  WD = { W : window.innerWidth-16, H : window.innerHeight-16}
+  WD = { W : window.innerWidth, H : window.innerHeight}
   D.S = (WD.W/D.W);
   let C_ = (WD.H/D.S);
   if (C_ < D.H) {
