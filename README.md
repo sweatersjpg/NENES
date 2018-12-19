@@ -13,7 +13,7 @@ and include them as scripts in your html file.
 <html>
   <head>
       <meta charset="UTF-8">
-      <title>RGE</title>
+      <title>NENES</title>
 
       <style type="text/css">
       body {margin:0; padding:0;}
