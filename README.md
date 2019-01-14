@@ -1,11 +1,12 @@
 # NENES.js
 
 NENES is a game engine that I'm developing using p5.js so that I can make little games more easily.
+
 Discalimer this engine is heavily reliant on p5.js which is an amazing library that just makes things easier, check it out here: https://p5js.org/
 
 # How to use NENES
 
-Now. Bare with me, I dont know how to make a real library (yet), but you can sort of use this like one.
+Now, Bare with me, I dont know how to make a real library (yet), but you can sort of use this like one.
 
 To use it, you need to download NENES.js, p5.js: https://github.com/processing/p5.js/releases/download/0.7.2/p5.min.js
 and gamepad.js: https://github.com/neogeek/gamepad.js
@@ -36,7 +37,7 @@ To set up your program you need to add a couple of things:
 ```javascript
 function init_() {
   // your code here
-  setSpriteSheet(/*your sprite sheet data (must be an array)*/);
+  setSpriteSheet(/*your sprite sheet data*/);
   
 }
 
