@@ -22,19 +22,28 @@ let PAL = [
   '#ceaa00','#6fd600','#00e647','#17e69e','#00cede','#474747','#000000','#000000',
   '#fefefe','#aecefe','#b6befe','#ceaefe','#f69efe','#feaee6','#fec6d6','#f6cfae',
   '#fef6ae','#d6fea6','#96fe96','#9efeee','#6feaf6','#8e8e8e','#000000','#000000'
-]
+];
 const WHITE = '30';
 const BLACK = '3f';
 let BC;
-let PY = 0;
-let PX = 0;
+let pointer_ = { y : 0, x : 0, c : 63, ox : 0 };
 let AB = [
   '0','1','2','3','4','5','6','7','8','9','!','"','#','$','%','&',
   "'",'(',')','*','+',',','-','.','/',':',';','<','=','>','?','@',
   'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p',
   'q','r','s','t','u','v','w','x','y','z','[','~',']','^','_',"'"
+];
+let controls_ = [87, 83, 65, 68, 32, 13, 27, 9];
+const btnlist = ['up','down','left','right','a','b','start','select'];
+let nplayers = 0;
+let player_ = [];
+const gamepad = new Gamepad();
+let gamepadbtns = [
+  new Array(8),
+  new Array(8),
+  new Array(8),
+  new Array(8)
 ]
-let controls = [87, 83, 65, 68, 32, 13];
 let ctr = new Array(255);
 let menu;
 let Draw;
@@ -42,14 +51,15 @@ let font = new Array(64);
 let pb = { paused : true, pressed : false }
 let layer = new Array(2);
 let currentLayer = 0;
-let defaultPalette = ['20','10','00','3d','1d','0d'];
-let currentPalette;
+let pxls = new Array(64);
+let defaultPalette = ['20','10','00','3d','2d','1d','3f','3f'];
+let currentPalette = defaultPalette;
 let sprImg = [];
+let sprData = [];
 
 function setup() {
   updateSize();
 
-  // canvasElement = document.createElement('canvas');
   canvasElement = createCanvas(WD.W,WD.H).elt;
   ctx = canvasElement.getContext('2d');
   ctx.mozImageSmoothingEnabled = false;
@@ -60,16 +70,17 @@ function setup() {
   noCursor();
   frameRate(FRAMERATE);
   p5.disableFriendlyErrors = true;
-  // resetPixels();
 
   Draw = new drawing();
   mouse = new mouse();
   menu = new defaultMenu();
   currentPalette = palset(defaultPalette);
   loadNESFont(FNT);
+  genPixels();
+
+  setControls(controls_);
 
   if (typeof init_ !== 'undefined') init_();
-  initializeLayers();
 }
 
 function draw() {
@@ -93,8 +104,12 @@ function del(array, index) {
   array.splice( array.indexOf(index), 1);
 }
 
-function btn(i) {
-  return keyIsDown(controls[i]);
+function btn(button, p) {
+  let i = button;
+  if(typeof button === 'string') i = btnlist.indexOf(button);
+  if(typeof p === 'undefined') p = 0;
+  return gamepadbtns[p][i];
+  // return keyIsDown(controls_[i]);
 }
 
 function spr(frame, x, y, w, h, d) {
@@ -104,10 +119,11 @@ function spr(frame, x, y, w, h, d) {
   let dy = floor(y)*D.S;
   let dx = floor(x)*D.S;
 
-  let sw = 16;
-  let sh = 16;
-  if(typeof w !== 'undefined') sw = w * 16;
-  if(typeof h !== 'undefined') sh = h * 16;
+  w = w || 1;
+  h = h || 1;
+
+  let sw = w * 16;
+  let sh = h * 16;
 
   let dw = sw*D.S;
   let dh = sh*D.S;
@@ -125,10 +141,10 @@ function spr(frame, x, y, w, h, d) {
   if(index < 0) {
     img = createImage(sw, sh);
     img.loadPixels();
-    w = sqrt(spriteSheet.length)
+    w = sqrt(sprData.length)
     for (var y = 0; y < sh; y++) {
       for (var x = 0; x < sw; x++) {
-        let sp = spriteSheet[ (x+sx) + (y+sy) * w];
+        let sp = sprData[ (x+sx) + (y+sy) * w];
         if(sp == 9) continue;
         clr = color(PAL[currentPalette[sp]]);
         setColorAtIndex(img, x, y, clr);
@@ -142,7 +158,6 @@ function spr(frame, x, y, w, h, d) {
     index = sprImg.length-1;
   }
 
-  // push();
   temp = {};
   if(d == true) {
     temp.scale = -1.0;
@@ -154,19 +169,15 @@ function spr(frame, x, y, w, h, d) {
   temp.y = dy;
   temp.w = dw;
   temp.h = dh;
-  add(layer[currentLayer], temp)
-  // image(sprImg[index].img, dx, dy, dw, dh);
-  // pop();
+  add(layer[currentLayer], temp);
 }
 
 function put(s, x, y, c) {
-  let useGlobal=false;
-  if(typeof x == 'undefined' || typeof y == 'undefined') {
-    x = PX;
-    y = PY;
-    useGlobal = true;
-  }
-  if(typeof c == 'undefined') c = 63;
+  if(typeof x !== 'undefined') pointer_.ox = x;
+  x = x || pointer_.x;
+  y = y || pointer_.y;
+  c = c || pointer_.c;
+
   if(typeof c == 'string') c = parseInt(c, 16);
   if(typeof s == 'string') s = s.toLowerCase();
   else s = String(s);
@@ -187,13 +198,24 @@ function put(s, x, y, c) {
     if(s.charAt(i) == "~"){
       if(s.charAt(i+1) == 'n') {
         dx=0;
+        x=pointer_.ox;
         dy+=sw;
         i += 1;
         continue;
       }
     }
-
-    image(font[c], floor(x+dx)*D.S, floor(y+dy)*D.S, dw, dw, sx, sy, sw, sw);
+    // image(font[c], floor(x+dx)*D.S, floor(y+dy)*D.S, dw, dw, sx, sy, sw, sw);
+    temp = {};
+    temp.img = font[c];
+    temp.x = floor(x+dx)*D.S;
+    temp.y = floor(y+dy)*D.S;
+    temp.w = dw;
+    temp.h = dw;
+    temp.sx = sx;
+    temp.sy = sy;
+    temp.sw = sw;
+    temp.sh = sw;
+    add(layer[currentLayer], temp)
 
     dx+=sw;
     if(dx > 400){
@@ -202,10 +224,19 @@ function put(s, x, y, c) {
     }
   }
 
-  if(useGlobal) {
-    PX = dx + x;
-    PY = dy + y;
-  }
+  pointer_.x = dx + pointer_.ox;
+  pointer_.y = dy + y;
+  pointer_.c = c;
+}
+
+function locate(x, y) {
+  pointer_.x = x;
+  pointer_.ox = x;
+  if(typeof y !== 'undefined') pointer_.y = y;
+}
+
+function textc(c) {
+  pointer_.c = c;
 }
 
 function cls(c) {
@@ -213,8 +244,7 @@ function cls(c) {
   if(typeof c == 'string') c = parseInt(c, 16);
   background(PAL[c]);
   BC = c;
-  PX = 0;
-  PY = 0;
+  pointer_ = { x:0, y:0, c:63 };
 }
 
 function pget(x, y) {
@@ -228,11 +258,18 @@ function pget(x, y) {
 function pset(x, y, c) {
   if(typeof c == 'string') c = parseInt(c, 16);
   if(x > 0 && x < D.W && y > 0 && y < D.H) {
-    push();
-    fill(PAL[c]);
-    noStroke();
-    rect(x*D.S, y*D.S, D.S, D.S);
-    pop();
+    // push();
+    // fill(PAL[c]);
+    // noStroke();
+    // rect(x*D.S, y*D.S, D.S, D.S);
+    // pop();
+    temp = {};
+    temp.img = pxls[c];
+    temp.x = x * D.S;
+    temp.y = y * D.S;
+    temp.w = 1 * D.S;
+    temp.h = 1 * D.S;
+    add(layer[currentLayer], temp);
     // setColorAtIndex(layer[currentLayer], x, y, PAL[c]);
   }
 }
@@ -257,25 +294,47 @@ function lget() {
   return currentLayer;
 }
 
+function map(x, y, w, h) {
+
+}
+
 //-----------------------
+
+function genPixels() {
+  for (var i = 0; i < PAL.length; i++) {
+    pxls[i] = createImage(1, 1);
+    pxls[i].loadPixels();
+    setColorAtIndex(pxls[i], 0, 0, color(PAL[i]));
+    pxls[i].updatePixels();
+  }
+}
 
 function generateID(p, f) {
   let id = 0;
-  for (var i = 0; i < p.length; i++) id += p[i]*i;
+  for (var i = 0; i < p.length; i++) id += p[i]*(i*64);
   return id*(f+1);
+}
+
+function setControls(a) {
+  controls_ = a;
+  gamepad.setCustomMapping('keyboard', {
+    'd_pad_up': a[0],
+    'd_pad_down': a[1],
+    'd_pad_left': a[2],
+    'd_pad_right': a[3],
+    'button_1': a[4],
+    'button_3': a[5],
+    'start': a[6],
+    'select': a[7]
+  });
 }
 
 function setNumberOfLayers(n) {
   layer = new Array(n);
 }
 
-function initializeLayers() {
-  // for (var i = 0; i < layer.length; i++) {
-  //   layer[i] = createGraphics(WD.W, WD.H);
-  //   layer[i].pixelDensity(4);
-  //   layer[i].scale(1/4);
-  //   // layer[i].loadPixels();
-  // }
+function setSpriteSheet(s) {
+  sprData = s;
 }
 
 function DisplayPixels() {
@@ -284,7 +343,9 @@ function DisplayPixels() {
       o = layer[i][j];
       push();
       scale(o.scale, 1.0);
-      image(o.img, o.x, o.y, o.w, o.h);
+      if(typeof o.sx != 'undefined') {
+        image(o.img, o.x, o.y, o.w, o.h, o.sx, o.sy, o.sw, o.sh);
+      } else image(o.img, o.x, o.y, o.w, o.h);
       pop();
     }
   }
@@ -299,24 +360,6 @@ function resetPixels() {
   background(0);
 }
 
-// function loadSpriteSheet(s) {
-//   w = sqrt(s.length);
-//   sprtsht_ = createImage(w, w);
-//   sprtsht_.loadPixels();
-//
-//   for (var y = 0; y < w; y++) {
-//     for (var x = 0; x < w; x++) {
-//       let i = x + y * w;
-//       if(s[i] != "##") {
-//         let c = parseInt(s[i], 16);
-//         sprtsht_.set(x, y, color(PAL[c]));
-//       }
-//     }
-//   }
-//
-//   sprtsht_.updatePixels();
-// }
-
 function loadNESFont(s) {
   let w = 256;
   let h = 16;
@@ -325,15 +368,11 @@ function loadNESFont(s) {
     font[i] = createImage(256,16);
     font[i].loadPixels();
 
-    for (var y = 0; y < h; y++) {
-      for (var x = 0; x < w; x++) {
-        let p = x + y * w;
-        if(s[p] == 1) {
-          font[i].set(x, y, color(PAL[i]));
-        }
-      }
+    for (var y = 0; y < h; y++)
+    for (var x = 0; x < w; x++) {
+      let p = x + y * w;
+      if(s[p] == 1) font[i].set(x, y, color(PAL[i]));
     }
-
     font[i].updatePixels();
   }
 
@@ -347,16 +386,6 @@ function imageIndex(img, x, y) {
   return 4 * (x + y * img.width);
 }
 
-function getColorAtindex(img, x, y) {
-  let idx = imageIndex(img, x, y);
-  let pix = img.pixels;
-  let red = pix[idx];
-  let green = pix[idx + 1];
-  let blue = pix[idx + 2];
-  let alpha = pix[idx + 3];
-  return color(red, green, blue, alpha);
-}
-
 function setColorAtIndex(img, x, y, clr) {
   let idx = imageIndex(img, x, y);
   let pix = img.pixels;
@@ -368,9 +397,8 @@ function setColorAtIndex(img, x, y, clr) {
 
 function defaultMenu() {
 
-
   this.update = function() {
-    cls('3f');
+    cls(BLACK);
     put("paused", D.W/2 - 24, D.H/2 - 4, WHITE);
   }
 }
@@ -392,29 +420,16 @@ function mouse() {
 }
 
 function showFrames() {
-  lastFramerRates[127]=frameRate();
-  let sum = 0;
-  for (var i = 0; i < 127; i++) {
-    sum += lastFramerRates[i];
-    lastFramerRates[i] = lastFramerRates[i+1];
-  }
-  let avg = sum/127;
-
   let x = D.W - 16;
   let y = D.H - 8;
-  if(pget(x, y) != 63) clr = BLACK;
-  else clr = WHITE;
-  // put(String(lastFramerRates));
-  put(round(avg), x, y, clr);
+  put(frameRate(), x, y, BLACK);
 }
 
 function pause() {
-  if (!pb.pressed & keyIsDown(27)) {
+  if (!pb.pressed & btn(6)) {
     pb.paused = !pb.paused;
     pb.pressed = true;
-  } else if (!keyIsDown(27)) {
-    pb.pressed = false;
-  }
+  } else if (!btn(6)) pb.pressed = false;
   return pb.paused;
 }
 
@@ -432,8 +447,43 @@ function updateSize() {
   }
   WD.H = D.H*D.S;
   WD.W = D.W*D.S;
-
 }
+
+function setButton(n, b, e) {
+  e = e || 'keyboard';
+  if(e.player = 'keyboard') p = 0;
+  else p = player_.indexOf(e.player);
+  gamepadbtns[p][n] = b;
+}
+
+gamepad.on('connect', e => {
+  add(player_, e.index);
+  nplayers += 1;
+  console.log(`player ${e.index} has connected.`);
+});
+
+gamepad.on('disconnect', e => {
+  del(player_, e.index);
+  nplayers -= 1;
+  console.log(`player ${e.index} has disconnected.`);
+});
+
+gamepad.on('press'  , 'd_pad_up'   , e => {setButton(0, true, e );});
+gamepad.on('release', 'd_pad_up'   , e => {setButton(0, false, e);});
+gamepad.on('press'  , 'd_pad_down' , e => {setButton(1, true, e );});
+gamepad.on('release', 'd_pad_down' , e => {setButton(1, false, e);});
+gamepad.on('press'  , 'd_pad_left' , e => {setButton(2, true, e );});
+gamepad.on('release', 'd_pad_left' , e => {setButton(2, false, e);});
+gamepad.on('press'  , 'd_pad_right', e => {setButton(3, true, e );});
+gamepad.on('release', 'd_pad_right', e => {setButton(3, false, e);});
+gamepad.on('press'  , 'button_1'   , e => {setButton(4, true, e );});
+gamepad.on('release', 'button_1'   , e => {setButton(4, false, e);});
+gamepad.on('press'  , 'button_3'   , e => {setButton(5, true, e );});
+gamepad.on('release', 'button_3'   , e => {setButton(5, false, e);});
+gamepad.on('press'  , 'start'      , e => {setButton(6, true, e );});
+gamepad.on('release', 'start'      , e => {setButton(6, false, e);});
+gamepad.on('press'  , 'select'     , e => {setButton(7, true, e );});
+gamepad.on('release', 'select'     , e => {setButton(7, false, e);});
 
 class drawing {
 
@@ -450,8 +500,12 @@ class drawing {
     this.Line(x0, y1, x1, y1, c);
   }
 
-  FillRect() {
-
+  FillRect(x0, y0, w, h, c) {
+    for (var y = y0; y < h+y0; y++) {
+      for (var x = x0; x < w+x0; x++) {
+        pset(x, y, c);
+      }
+    }
   }
 
   Line(x0, y0, x1, y1, c) {
