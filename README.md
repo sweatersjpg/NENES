@@ -7,7 +7,8 @@ Discalimer this engine is heavily reliant on p5.js which is an amazing library t
 
 Now. Bare with me, I dont know how to make a real library (yet), but you can sort of use this like one.
 
-To use it, you need to download NENES.js, and p5.js: https://github.com/processing/p5.js/releases/download/0.7.2/p5.min.js
+To use it, you need to download NENES.js, p5.js: https://github.com/processing/p5.js/releases/download/0.7.2/p5.min.js
+and gamepad.js: https://github.com/neogeek/gamepad.js
 and include them as scripts in your html file.
 ```html
 <html>
@@ -21,8 +22,9 @@ and include them as scripts in your html file.
       </style>
 
       <script src="p5.min.js" type="text/javascript"></script>
-      <script src="NENES.js" type="text/javascript"></script>
       <script src="program.js" type="text/javascript"></script>
+      <script src="NENES.js" type="text/javascript"></script>
+      <script src="gamepad.js.js" type="text/javascript"></script>
   </head>
 </html>
 ```
