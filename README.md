@@ -34,6 +34,8 @@ To set up your program you need to add a couple of things:
 ```javascript
 function init_() {
   // your code here
+  setSpriteSheet(/*your sprite sheet data (must be an array)*/);
+  
 }
 
 function draw_() {
@@ -56,21 +58,19 @@ More information about how to create a spritesheet can be found here: *WIP*
 
 ##### Syntax
 ```javascript
-spr(frame, x, y, [w], [h], [d])
+spr(frame, x, y, [w], [h], [direction])
 ```
 ### Parameters
 ##### frame: 
-  the sprite number.
-##### x: 
-  the x coordinate that the top right corner of the sprite will be placed
-##### y: 
-  the y coordinate that the top right corner of the sprite will be placed
+  (0-255) which 16x16 tile of the 256-pixel sprite-sheet to be loaded and displayed.
+##### x & y: 
+  X & Y coordinates for the top left corner of the sprite.
 ##### w:
-  how many sprites across from the spritesheet should be displayed (optional)
+  The number of tiles wide that will be displayed, starting from the tile indicated with spriteNumber.
 ##### h:
-  how many sprites down from the spritesheet should be displayed (optional)
-##### d:
-  weather or not the image is flipped (either true or false) (optional)
+  The number of tiles high that will be displayed, starting from the tile indicated with spriteNumber.
+##### direction:
+  (true: mirrored, false: not mirrored) Whether or not the sprite will be drawn mirrored.
 
 ## 2. put()
 
@@ -87,7 +87,7 @@ put(string, x, y, clr)
   y coordinate
 ##### clr: 
   the NES colour that it will print in (#'s from 0-63 or their hex code eg. 64='3f')
-(if no colour is provided than it will default to black, and if no coordinates are provided it will print at 0,0 or the end of the last call of put() with no coordinates.)
+(if no colour is provided than it will default to black, and if no coordinates are provided it will print at the end of the last call of put())
 
 ## 3. cls()
 
@@ -102,7 +102,7 @@ cls(clr)
 ## 4. btn()
 
 ```javascript
-btn(n)
+btn(n, player)
 ```
 
 btn() returns true if control[n] is pressed; where control is an array of keycodes that you can set in init_()
