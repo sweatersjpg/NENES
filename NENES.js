@@ -396,10 +396,83 @@ function setColorAtIndex(img, x, y, clr) {
 }
 
 function defaultMenu() {
+  this.selected = 0;
+  this.bp = [false,false,false,false,false,false,false,false];
+  this.options = 2;
+  this.editing = false;
+  this.cbtn = 0;
+  this.newbtns = new Array(8);
 
   this.update = function() {
     cls(BLACK);
-    put("paused", D.W/2 - 24, D.H/2 - 4, WHITE);
+    textc(WHITE);
+    put("paused", 32, D.H/2 - 20);
+
+    if(this.editing && !this.bp['a']) {
+
+      let k = 0;
+      if(key >= 'a' && key <= 'z') k = keyCode - 32;
+      else k = keyCode;
+
+      if(keyIsPressed && this.cbtn < 6) {
+        if(this.newbtns.indexOf(k) == -1) {
+          this.newbtns[this.cbtn] = k;
+          this.cbtn += 1;
+        }
+      }
+
+      locate(32, D.H/2 - 4);
+      for (var i = 0; i < 6; i++) {
+        put(btnlist[i] + " ");
+        if(typeof this.newbtns[i] == 'undefined' && i == this.cbtn) {
+          put("[press any key]~n");
+          continue;
+        }
+        if(typeof this.newbtns[i] !== 'undefined') put(this.newbtns[i] + "~n");
+        else put("~n");
+      }
+
+      if(this.cbtn >= 6) {
+        this.editing = false;
+        this.cbtn = 0;
+        this.newbtns[6] = controls_[btnlist.indexOf('start')];
+        this.newbtns[7] = controls_[btnlist.indexOf('select')];
+        setControls(this.newbtns);
+        this.newbtns = new Array(8);
+      }
+
+      return 0;
+    }
+
+    if( btn('a')) {
+      this.bp['a'] = true;
+      if(this.selected == 0) pb.paused = false;
+      if(this.selected == 1) this.editing = true;
+    } else this.bp['a'] = false;
+
+    if(btn('up')) {
+      if(!this.bp['up']) {
+        this.selected -= 1;
+        this.bp['up'] = true;
+      }
+    } else this.bp['up'] = false;
+    if(btn('down')) {
+      if(!this.bp['down']) {
+        this.selected += 1;
+        this.bp['down'] = true;
+      }
+    } else this.bp['down'] = false;
+
+    if(this.selected > this.options - 1) this.selected = 0;
+    if(this.selected < 0) this.selected = this.options - 1;
+
+    put(">", 24, D.H/2 - 4 + (this.selected * 8));
+
+    locate(32, D.H/2 - 4);
+    put("resume~n");
+    put("edit controls (keyboard only)");
+
+    textc(BLACK);
   }
 }
 
