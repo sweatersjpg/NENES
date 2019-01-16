@@ -558,6 +558,10 @@ gamepad.on('release', 'start'      , e => {setButton(6, false, e);});
 gamepad.on('press'  , 'select'     , e => {setButton(7, true, e );});
 gamepad.on('release', 'select'     , e => {setButton(7, false, e);});
 
+window.addEventListener("keydown", function(e) {
+    if([32, 37, 38, 39, 40, 27].indexOf(e.keyCode) > -1) e.preventDefault();
+}, false);
+
 class drawing {
 
   constructor() {
