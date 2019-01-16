@@ -38,7 +38,7 @@ To set up your program you need to add a couple of things:
 function init_() {
   // your code here
   setSpriteSheet(/*your sprite sheet data*/);
-  
+  // if you use my converter than this should be "spriteSheet" however it can be changed to whatever
 }
 
 function draw_() {
