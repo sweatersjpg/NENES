@@ -6,7 +6,7 @@ Discalimer this engine is heavily reliant on p5.js which is an amazing library t
 
 # How to use NENES
 
-Now, Bare with me, I dont know how to make a real library (yet), but you can sort of use this like one.
+Now, Bare with me, I dont know how to make a real library (yet), but you can of use this like one.
 
 To use it, you need to download NENES.js, p5.js: https://github.com/processing/p5.js/releases/download/0.7.2/p5.min.js
 and gamepad.js: https://github.com/neogeek/gamepad.js
