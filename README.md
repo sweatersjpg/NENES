@@ -140,8 +140,8 @@ lget() // returns the current layer
 # How sprite data is handled
 
 Currently, the sprite data is a 256x256 long array with numbers from 0-9, 9 being transparent, and numbers 0-7 corresponding to palette that is currently set.
-Right now I use a seperate .js file to store the sprite data as a global variable, since that much text laggs my editor
-Unfortunately at the moment it's really hard for someone else to convert a png image into sprite data, right now I have my own converter but it requires a specific photoshop palette to draw the sprites, and I just drag and drop the files into the converter master file.
-I'm working on a more user friendly converter, and hosting that on a realy website to upload png's to.
+To generate compatable sprite data use this tool on my itch.io page:
+https://sweaters.itch.io/nenes-converter
+It also explains how to go about creating a compatable sprite sheet png to upload.
 
 # To do: displaying and using maps
