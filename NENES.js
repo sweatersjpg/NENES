@@ -309,7 +309,7 @@ function genPixels() {
 
 function generateID(p, f) {
   let id = 0;
-  for (var i = 0; i < p.length; i++) id += p[i]*(i*64);
+  for (var i = 0; i < p.length; i++) id += p[i]*((i+1)*64);
   return id*(f+1);
 }
 
