@@ -2,15 +2,15 @@
 
 NENES is a game engine that I'm developing using p5.js so that I can make little games more easily.
 
-Discalimer this engine is heavily reliant on p5.js which is an amazing library that just makes things easier, check it out here: https://p5js.org/
+Disclaimer this engine is heavily reliant on p5.js which is an amazing library that just makes things easier, check it out here: https://p5js.org/
 
 # How to use NENES
 
-Now, Bare with me, I dont know how to make a real library (yet), but you can of use this like one. (because everything is global)
+Now, Bare with me, I don't know how to make a real library (yet), but you can of use this like one. (because everything is global)
 
 To use it, you need to download NENES.js, p5.js: https://github.com/processing/p5.js/releases/download/0.7.2/p5.min.js
 and gamepad.js: https://github.com/neogeek/gamepad.js
-and include them as scripts in your html file.
+and include them as scripts in your HTML file.
 ```html
 <html>
   <head>
@@ -30,7 +30,7 @@ and include them as scripts in your html file.
 </html>
 ```
 
-Next you need to make a new .js file and call it whatever you want, and also include it in your html file.
+Next, you need to make a new .js file and call it whatever you want, and also include it in your HTML file.
 (in the example above the file is called "program.js")
 
 To set up your program you need to add a couple of things:
@@ -50,7 +50,11 @@ function draw_() {
 These functions work the exact same as the setUp() and draw() functions in p5.js
 (because they are literally inside setUp() and draw() in NENES.js)
 
-# functions
+# How NENES colours work
+
+NENES uses 64 hand-picked colours, and each palette can use 8 of those colours for each sprite to be drawn in.
+
+# Functions
 
 NENES.js has a bunch of really useful functions that make making a retro looking game a lot easier.
 
@@ -128,7 +132,7 @@ a palette is an 8-digit array of numbers which represent NES colours
 
 ## 7. lset() & lget & setNumberOfLayers()
 Layers are used to draw sprites behind or on top of other sprite 
-(for example you'd want your player in the foreground and the map in the background)
+(for example, you'd want your player in the foreground and the map in the background)
 
 ```javascript
 setNumberOfLayers(n) //called in init_() creates n layers for sprites to be drawn on
@@ -139,7 +143,7 @@ lget() // returns the current layer
 
 # How sprite data is handled
 
-Currently, the sprite data is a 256x256 long array with numbers from 0-9, 9 being transparent, and numbers 0-7 corresponding to palette that is currently set.
+Currently, the sprite data is a 256x256 long array with numbers from 0-9, 9 being transparent, and numbers 0-7 corresponding to the palette that is currently set.
 To generate compatable sprite data use this tool on my itch.io page:
 https://sweaters.itch.io/nenes-converter
 It also explains how to go about creating a compatable sprite sheet png to upload.
