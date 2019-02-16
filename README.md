@@ -52,7 +52,7 @@ These functions work the exact same as the setUp() and draw() functions in p5.js
 
 # How NENES colours work
 
-NENES uses 64 hand-picked colours, and each palette can use 8 of those colours for each sprite to be drawn in.
+NENES uses 64 hand-picked colours, and a palette can use 8 of those colours (represented in hexadecimal) for each sprite to be drawn in.
 
 # Functions
 
