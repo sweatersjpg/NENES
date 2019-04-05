@@ -432,7 +432,7 @@ function mouse() {
 function showFrames() {
   let x = D.W - 16;
   let y = D.H - 8;
-  put(frameRate(), x, y, BLACK);
+  put(frameRate(), x, y, '3f');
 }
 
 function pause() {
