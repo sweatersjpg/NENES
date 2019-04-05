@@ -6,7 +6,7 @@ Disclaimer this engine is heavily reliant on p5.js which is an amazing library t
 
 # How to use NENES
 
-Now, Bare with me, I don't know how to make a real library (yet), but you can of use this like one. (because everything is global)
+Now, Bare with me, I don't know how to make a real library (yet), but you can use this like one. (because everything is global)
 
 To use it, you need to download NENES.js, p5.js: https://github.com/processing/p5.js/releases/download/0.7.2/p5.min.js
 and gamepad.js: https://github.com/neogeek/gamepad.js
@@ -15,7 +15,7 @@ and include them as scripts in your HTML file.
 <html>
   <head>
       <meta charset="UTF-8">
-      <title>NENES</title>
+      <title>My NENES Game</title>
 
       <style type="text/css">
       body {margin:0; padding:0;}
@@ -31,6 +31,7 @@ and include them as scripts in your HTML file.
 ```
 
 Next, you need to make a new .js file and call it whatever you want, and also include it in your HTML file.
+This will be where you write your game.
 (in the example above the file is called "program.js")
 
 To set up your program you need to add a couple of things:
@@ -42,8 +43,8 @@ function init_() {
 }
 
 function draw_() {
-  cls('00');
-  
+  cls('3f'); // clears screen to black
+
   // your code here
 }
 ```
@@ -53,31 +54,39 @@ These functions work the exact same as the setUp() and draw() functions in p5.js
 # How NENES colours work
 
 NENES uses 64 hand-picked colours, and a palette can use 8 of those colours (represented in hexadecimal) for each sprite to be drawn in.
+### Key values:
+  '30' or 0x30 or 48, is the colour white.
+  '3f' or 0x3f or 63, is the colour black.
+  '40' or 0x40 or 64, the transparent colour.
 
 # Functions
 
-NENES.js has a bunch of really useful functions that make making a retro looking game a lot easier.
+NENES.js has a bunch of really useful functions that make making a pixely looking game a lot easier.
 
 ## 1. spr()
 
-This is probably the most important function as it is how you draw a sprites to the canvas.
-More information about how to create a spritesheet can be found here: *WIP*
+This is probably the most important function as it's how you draw a sprites to the canvas.
+More information about how to create a spritesheet can be found here: https://sweaters.itch.io/nenes-converter
 
 ##### Syntax
 ```javascript
-spr(frame, x, y, [w], [h], [direction])
+spr(frame, x, y, [r], [c], [direction], [angle], [ph], [pw])
 ```
 ### Parameters
-##### frame: 
+##### frame:
   (0-255) which 16x16 tile of the 256-pixel sprite-sheet to be loaded and displayed.
-##### x & y: 
+##### x & y:
   X & Y coordinates for the top left corner of the sprite.
-##### w:
-  The number of tiles wide that will be displayed, starting from the tile indicated with spriteNumber.
-##### h:
-  The number of tiles high that will be displayed, starting from the tile indicated with spriteNumber.
+##### r:
+  The number of tiles wide that will be displayed, starting from the tile indicated with frame.
+##### c:
+  The number of tiles high that will be displayed, starting from the tile indicated with frame.
 ##### direction:
   (true: mirrored, false: not mirrored) Whether or not the sprite will be drawn mirrored.
+##### angle:
+  The angle in which the sprite will be drawn.
+##### pw and ph:
+  These are the actual pixel width and height that you want to draw the sprite with, to resize, squash and stretch it.
 
 ## 2. put()
 
@@ -92,19 +101,19 @@ put(string, x, y, clr)
   x coordinate
 ##### y:
   y coordinate
-##### clr: 
-  the NES colour that it will print in (#'s from 0-63 or their hex code eg. 64='3f')
+##### clr:
+  the NES colour that it will print in (#'s from 0-63 or their hex code eg. 63='3f')
 (if no colour is provided than it will default to black, and if no coordinates are provided it will print at the end of the last call of put())
 
 ## 3. cls()
 
-generally at the beginning of draw_()
+Clears the screen with a given colour. Generally at the beginning of draw_().
 
 ```javascript
 cls(clr)
 ```
 ##### clr:
-  the NES colour that the background will clear in (#'s from 0-63 or their hex code eg. 64='3f')
+  the NES colour that the background will clear in (#'s from 0-63 or their hex code eg. 63='3f')
 
 ## 4. btn()
 
@@ -124,14 +133,19 @@ del(array, index) // deletes index from array
 
 ## 6. palset() & palget()
 ```javascript
-palset(palette) // sets the current palette to palette
+palset(palette) // sets the current palette to 'palette'
 palget() // returns the current palette
 ```
 
 a palette is an 8-digit array of numbers which represent NES colours
+for example:
+```javascript
+palset(['30','30','30','30','30','30','30','40'])
+```
+this sets the palette to all white except at index 7 which is transparent.
 
 ## 7. lset() & lget & setNumberOfLayers()
-Layers are used to draw sprites behind or on top of other sprite 
+Layers are used to draw sprites behind or on top of other sprite
 (for example, you'd want your player in the foreground and the map in the background)
 
 ```javascript
@@ -148,4 +162,6 @@ To generate compatable sprite data use this tool on my itch.io page:
 https://sweaters.itch.io/nenes-converter
 It also explains how to go about creating a compatable sprite sheet png to upload.
 
-# To do: displaying and using maps
+# TODO: displaying and using maps
+
+currently its up to you to figure that one out :/
