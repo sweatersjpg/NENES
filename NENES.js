@@ -142,7 +142,8 @@ function spr(F, X, Y, SW, SH, DIR, ANG, DW, DH) {
     let data = new Array(DW*DH);
     for (var x = 0; x < DW; x++) {
       for (var y = 0; y < DH; y++) {
-        x_=floor(map(x, 0, DW, 0, sw, true));
+        if(DIR) x_=floor(map(x, 0, DW, sw, 0, true));
+        else x_=floor(map(x, 0, DW, 0, sw, true));
         y_=floor(map(y, 0, DH, 0, sh, true));
         data[x+y*DW] = sprData[ (sx+x_)+(sy+y_)*s ];
       }
