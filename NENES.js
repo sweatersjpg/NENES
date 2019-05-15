@@ -128,7 +128,7 @@ function spr(F, X, Y, SW, SH, DIR, ANG, DW, DH) {
   let dx = floor(X-S/2)*D.S;
   let dw = S*D.S*2;
   let dh = S*D.S*2;
-  let id = genID(palget(), floor(F), DW, DH, ANG, DIR);
+  let id = genID(palget(), floor(F), DW, DH, ANG, DIR, SW, SH);
   id += 1;
   let index = -1;
   for (var i = 0; i < sprImg.length; i++) {
@@ -256,7 +256,7 @@ function setMainFunction(fn) {
 
 //-----------------------
 
-function genID(p, f, w, h, a, d) {
+function genID(p, f, w, h, a, d, r, c) {
   while(a<=0) a += TWO_PI;
   let str = ""+p+""+f+""+w+""+h+""+floor(((a*180/PI)%360)+1)+""+d;
   var hash = 0, i, chr;
