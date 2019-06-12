@@ -97,10 +97,11 @@ function draw() {
 
 //-----------------------
 
-function btn(button, p) {
+function btn(button, p, usePbutton) {
   let i = button;
   if(typeof button === 'string') i = btnlist.indexOf(button);
   if(typeof p === 'undefined') p = 0;
+  if(usePbutton) return gamepadbtns[p][i] && !pbtn(i, p);
   return gamepadbtns[p][i];
 }
 
