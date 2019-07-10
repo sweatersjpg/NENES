@@ -165,3 +165,4 @@ It also explains how to go about creating a compatable sprite sheet png to uploa
 # TODO: displaying and using maps
 
 currently its up to you to figure that one out :/
+But I'm working on it!
