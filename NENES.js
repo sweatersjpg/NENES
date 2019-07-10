@@ -50,7 +50,7 @@ let pregamepadbtns = [
 let ctr = new Array(255);
 let menu;
 let font = new Array(64);
-let pause_Button_ = { paused : true, pressed : false }
+let pause_Button_ = { paused : false, pressed : false }
 let layer = new Array(2);
 let currentLayer = 0;
 let defaultPalette = ['20','10','00','3d','2d','1d','3f','3f'];
