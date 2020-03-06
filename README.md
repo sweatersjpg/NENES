@@ -13,20 +13,26 @@ and gamepad.js: https://github.com/neogeek/gamepad.js
 and include them as scripts in your HTML file.
 ```html
 <html>
-  <head>
-      <meta charset="UTF-8">
-      <title>My NENES Game</title>
+<head>
+  <meta charset="UTF-8">
+  <title>NENES</title>
 
-      <style type="text/css">
-      body {margin:0; padding:0;}
-      canvas {display:block;}
-      </style>
+  <style type="text/css">
+  body {margin:0; padding:0; background-color: black}
+  canvas {display:block;}
+  </style>
 
-      <script src="p5.min.js" type="text/javascript"></script>
-      <script src="program.js" type="text/javascript"></script>
-      <script src="NENES.js" type="text/javascript"></script>
-      <script src="gamepad.js.js" type="text/javascript"></script>
-  </head>
+  <script src="Library/p5.min.js" type="text/javascript"></script>
+  <script src="Library/p5.sound.min.js" type="text/javascript"></script>
+  <script src="Library/p5.dom.min.js" type="text/javascript"></script>
+  <script src="Library/gamepad.js" type="text/javascript"></script>
+  <script src="Library/NENES.js" type="text/javascript"></script>
+  <script src="Library/spriteSheet.js" type="text/javascript"></script>
+  <script src="program.js" type="text/javascript"></script>
+
+</head>
+<body>
+</body>
 </html>
 ```
 
@@ -38,8 +44,10 @@ To set up your program you need to add a couple of things:
 ```javascript
 function init_() {
   // your code here
-  setSpriteSheet(/*your sprite sheet data*/);
-  // if you use my converter than this should be "spriteSheet" however it can be changed to whatever
+  setSpriteSheet(/*your sprite sheet data variable name in quotes*/);
+  // using my converter, this should be "spriteSheet" however it can be changed to whatever
+  setNumberOfLayers(3); // can be any amount
+  lset(1);
 }
 
 function draw_() {
@@ -53,7 +61,7 @@ These functions work the exact same as the setUp() and draw() functions in p5.js
 
 # How NENES colours work
 
-NENES uses 64 hand-picked colours, and a palette can use 8 of those colours (represented in hexadecimal) for each sprite to be drawn in.
+NENES uses 64 hand-picked colours, and a palette can use any number of those colours (represented in hexadecimal) for each sprite to be drawn in.
 ### Key values:
   '30' or 0x30 or 48, is the colour white.
   '3f' or 0x3f or 63, is the colour black.
@@ -61,11 +69,11 @@ NENES uses 64 hand-picked colours, and a palette can use 8 of those colours (rep
 
 # Functions
 
-NENES.js has a bunch of really useful functions that make making a pixely looking game a lot easier.
+NENES.js has a bunch of functions that make making a pixely looking game a lot easier.
 
 ## 1. spr()
 
-This is probably the most important function as it's how you draw a sprites to the canvas.
+This is the most important function as it's how you draw a sprites to the canvas.
 More information about how to create a spritesheet can be found here: https://sweaters.itch.io/nenes-converter
 
 ##### Syntax
@@ -76,7 +84,7 @@ spr(frame, x, y, [r], [c], [direction], [angle], [ph], [pw])
 ##### frame:
   (0-255) which 16x16 tile of the 256-pixel sprite-sheet to be loaded and displayed.
 ##### x & y:
-  X & Y coordinates for the top left corner of the sprite.
+  X & Y coordinates that the top left corner of the sprite will be drawn on screen.
 ##### r:
   The number of tiles wide that will be displayed, starting from the tile indicated with frame.
 ##### c:
@@ -118,18 +126,22 @@ cls(clr)
 ## 4. btn()
 
 ```javascript
-btn(n, player)
+btn(n, [player])
+// player 1 is the default when you only include 'n'
 ```
+use: 'up', 'down', 'left', 'right', 'a', 'b', 'start', or 'select'
 
 btn() returns true if control[n] is pressed; where control is an array of keycodes that you can set in init_()
 or use the default configuration:
   0: w 1: s 2: a 3: d 4: space 5: enter
 
-## 5. add() & del()
+## 5. pbtn
 ```javascript
-add(array, index) // attaches index to the end of array
-del(array, index) // deletes index from array
+pbtn(n, [player])
 ```
+
+Exactly the same as btn() but it uses the user input from the previous frame
+Its usefull for toggles
 
 ## 6. palset() & palget()
 ```javascript
@@ -137,14 +149,14 @@ palset(palette) // sets the current palette to 'palette'
 palget() // returns the current palette
 ```
 
-a palette is an 8-digit array of numbers which represent NES colours
+a palette is an array of numbers which represent NES colours
 for example:
 ```javascript
 palset(['30','30','30','30','30','30','30','40'])
 ```
 this sets the palette to all white except at index 7 which is transparent.
 
-## 7. lset() & lget & setNumberOfLayers()
+## 7. lset() & lget() & setNumberOfLayers()
 Layers are used to draw sprites behind or on top of other sprite
 (for example, you'd want your player in the foreground and the map in the background)
 
