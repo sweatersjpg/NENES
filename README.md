@@ -140,7 +140,8 @@ or use the default configuration:
 pbtn(n, [player])
 ```
 
-Exactly the same as btn() but it uses the user input from the previous frame
+Exactly the same as btn() but it uses the user input from the previous frame.
+
 Its usefull for toggles
 
 ## 6. palset() & palget()
