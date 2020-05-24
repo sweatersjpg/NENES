@@ -289,7 +289,10 @@ function spr(F, X, Y, SW, SH, DIR, ANG, DW, DH) {
     sprImg.push({img:img,id:id});
     index = sprImg.length-1;
   }
-  layer[currentLayer].push({img:sprImg[index].img,x:dx,y:dy,w:dw,h:dh,scale:1.0});
+  layer[currentLayer].push({
+    img:sprImg[index].img,x:dx,y:dy,w:dw,h:dh,scale:1.0,
+    camera: Object.assign({}, camera)
+  });
 }
 
 function put(s, x, y, c) {
@@ -317,7 +320,7 @@ function put(s, x, y, c) {
         continue;
       }
     }
-    temp = {img:font[c],w:dw,h:dw,sx:sx,sy:sy,sw:sw,sh:sw};
+    temp = {img:font[c],w:dw,h:dw,sx:sx,sy:sy,sw:sw,sh:sw,camera: Object.assign({}, camera)};
     temp.x = floor(x+dx)*D.S;
     temp.y = floor(y+dy)*D.S;
     layer[currentLayer].push(temp);
@@ -441,7 +444,7 @@ function DisplayPixels() {
       o = layer[i][j];
       push();
       scale(o.scale, 1.0);
-      translate(camera.x * D.S, camera.y * D.S);
+      translate(o.camera.x * D.S, o.camera.y * D.S);
       if(typeof o.sx !== 'undefined') image(o.img, o.x, o.y, o.w, o.h, o.sx, o.sy, o.sw, o.sh);
       else image(o.img, o.x, o.y, o.w, o.h);
       pop();
