@@ -362,7 +362,7 @@ function lset(n) { currentLayer = n; }
 
 function lget() { return currentLayer; }
 
-function setMainFunction(fn) { mainFN = fn; }
+function setDrawFunction(fn) { drawFN = fn; }
 
 //-----------------------
 
