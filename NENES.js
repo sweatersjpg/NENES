@@ -433,6 +433,35 @@ function uncompress(str) {
   return data;
 }
 
+function compress(data) {
+  let keyB = "!@%^&*()_+={}[]<>,./?|`~:;-¡€™‹›£¢ﬁ∞ﬂ§‡¶°•·ª‚º—±≠«»‘’“”ÆæÚ…¿÷˘≥≤";
+  let str = "";
+
+  function tob64(n) {
+    let keyA = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ#$';
+    let p1 = keyA.charAt(Math.floor(n/64));
+    let p2 = keyA.charAt(n%64);
+    if(p1 == '0') return p2;
+    else return p2 + p1;
+  }
+
+  let char = "start";
+  let count = 0;
+  for (var i = 0; i < data.length; i++) {
+    if(char != keyB.charAt(data[i]) || count == 4095) {
+      if(count) {
+        str += char + "";
+        if(count > 1) str += tob64(count) + "";
+      }
+      char = keyB.charAt(data[i]);
+      count = 0;
+    }
+    count++;
+  }
+  str += char + tob64(count);
+  return str;
+}
+
 function setCamera(x, y) {
   camera.x = x;
   camera.y = y;
