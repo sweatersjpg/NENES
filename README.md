@@ -1,4 +1,4 @@
-## Under Maintenence
+## NENES
 
 NENES (not exactly NES) is a game engine I created using p5.js, it's key features are: pixelated sprites (including pixelated rotation and scaling), palette swapping (different palettes can be assigned to sprites in real time), and pixelated text reminicent of the NES.
 
